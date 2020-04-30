@@ -17,12 +17,12 @@ def vector_coordinates(phi, theta):
 
 
 # Assign identifiers to the faces of the cube
-FACE_Z_POS = 1  # Left
-FACE_Z_NEG = 2  # Right
-FACE_Y_POS = 3  # Top
-FACE_Y_NEG = 4  # Bottom
-FACE_X_NEG = 5  # Front
-FACE_X_POS = 6  # Back
+FACE_Z_POS = 0  # Left
+FACE_Z_NEG = 1  # Right
+FACE_Y_POS = 2  # Top
+FACE_Y_NEG = 3  # Bottom
+FACE_X_NEG = 4  # Front
+FACE_X_POS = 5  # Back
 
 
 def get_face(x, y, z):
@@ -43,32 +43,32 @@ def raw_face_coordinates(face, x, y, z):
     From Open-GL specification (chapter 3.8.10) https://www.opengl.org/registry/doc/glspec41.core.20100725.pdf
     """
     if face == FACE_X_NEG:
-        xc = z
-        yc = y
-        ma = x
-        return xc, yc, ma
-    elif face == FACE_X_POS:
         xc = -z
         yc = y
         ma = x
         return xc, yc, ma
-    elif face == FACE_Y_NEG:
+    elif face == FACE_X_POS:
         xc = z
-        yc = -x
+        yc = y
+        ma = x
+        return xc, yc, ma
+    elif face == FACE_Y_NEG:
+        xc = -x
+        yc = z
         ma = y
         return xc, yc, ma
     elif face == FACE_Y_POS:
-        xc = z
-        yc = x
+        xc = x
+        yc = z
         ma = y
         return xc, yc, ma
     elif face == FACE_Z_POS:
-        xc = x
+        xc = -x
         yc = y
         ma = z
         return xc, yc, ma
     elif face == FACE_Z_NEG:
-        xc = -x
+        xc = x
         yc = y
         ma = z
         return xc, yc, ma
@@ -79,25 +79,8 @@ def raw_coordinates(xc, yc, ma):
     return (float(xc)/abs(float(ma)) + 1) / 2, (float(yc)/abs(float(ma)) + 1) / 2
 
 
-def face_origin_coordinates(face, n):
-    """ Return bottom-left coordinate of specified face in the input image. """
-    if face == FACE_X_NEG:
-        return n, n
-    elif face == FACE_X_POS:
-        return 3*n, n
-    elif face == FACE_Z_NEG:
-        return 2*n, n
-    elif face == FACE_Z_POS:
-        return 0, n
-    elif face == FACE_Y_POS:
-        return n, 0
-    elif face == FACE_Y_NEG:
-        return n, 2*n
-
-
 def normalized_coordinates(face, x, y, n):
     """ Return pixel coordinates in the input image where the specified pixel lies. """
-    face_coords = face_origin_coordinates(face, n)
     normalized_x = math.floor(x*n)
     normalized_y = math.floor(y*n)
 
@@ -111,7 +94,7 @@ def normalized_coordinates(face, x, y, n):
     elif normalized_y >= n:
         normalized_y = n-1
 
-    return face_coords[0] + normalized_x, face_coords[1] + normalized_y
+    return normalized_x, normalized_y
 
 
 def find_corresponding_pixel(i, j, w, h, n):
@@ -131,7 +114,4 @@ def find_corresponding_pixel(i, j, w, h, n):
 
     cube_coords = raw_coordinates(raw_face_coords[0], raw_face_coords[1], raw_face_coords[2])
 
-    return normalized_coordinates(face, cube_coords[0], cube_coords[1], n)
-
-
-
+    return face, normalized_coordinates(face, cube_coords[0], cube_coords[1], n)
